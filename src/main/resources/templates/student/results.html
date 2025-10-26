@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results - Online Exam System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 50px 0;
+        }
+        .results-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .result-icon {
+            font-size: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="results-card">
+                    <div class="text-center p-5">
+                        <!-- Manual Grading Notice -->
+                        <div th:if="${score == 0 && (exam.type.name() == 'CODING' || exam.type.name() == 'ESSAY')}">
+                            <i class="bi bi-hourglass-split text-warning result-icon"></i>
+                            <h1 class="text-warning mt-3">Submitted Successfully!</h1>
+                            <p class="lead">Your exam is awaiting manual grading by the instructor.</p>
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle"></i> 
+                                <strong>Note:</strong> Coding and Essay exams require manual evaluation. 
+                                You will be notified once your exam has been graded.
+                            </div>
+                        </div>
+                        
+                        <!-- MCQ Auto-graded Results -->
+                        <div th:if="${!(score == 0 && (exam.type.name() == 'CODING' || exam.type.name() == 'ESSAY'))}">
+                            <div th:if="${percentage >= 50}">
+                                <i class="bi bi-trophy-fill text-warning result-icon"></i>
+                                <h1 class="text-success mt-3">Congratulations!</h1>
+                                <p class="lead">You have passed the exam!</p>
+                            </div>
+                            <div th:if="${percentage < 50}">
+                                <i class="bi bi-x-circle-fill text-danger result-icon"></i>
+                                <h1 class="text-danger mt-3">Better Luck Next Time</h1>
+                                <p class="lead">Keep practicing and try again!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5">
+                        <h4 class="text-center mb-4">
+                            <i class="bi bi-file-earmark-text"></i> 
+                            <span th:text="${exam.title}">Exam Title</span>
+                        </h4>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <i class="bi bi-person-circle" style="font-size: 36px; color: #667eea;"></i>
+                                    <h6 class="mt-2">Student</h6>
+                                    <p class="mb-0" th:text="${student.name}">Student Name</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="score-circle">
+                                    <span th:text="${score}">85</span>
+                                </div>
+                                <p class="text-center mt-3 mb-0">
+                                    <strong>Score: </strong>
+                                    <span th:text="${score} + ' / ' + ${totalMarks}">85 / 100</span>
+                                </p>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <i class="bi bi-percent" style="font-size: 36px; color: #764ba2;"></i>
+                                    <h6 class="mt-2">Percentage</h6>
+                                    <p class="mb-0">
+                                        <span th:text="${#numbers.formatDecimal(percentage, 1, 2)} + '%'">85.00%</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress mb-4" style="height: 30px;">
+                            <div class="progress-bar" 
+                                 th:classappend="${percentage >= 50} ? 'bg-success' : 'bg-danger'"
+                                 role="progressbar" 
+                                 th:style="'width: ' + ${percentage} + '%'"
+                                 th:attr="aria-valuenow=${percentage}">
+                                <span th:text="${#numbers.formatDecimal(percentage, 1, 2)} + '%'">85%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="bi bi-info-circle"></i> Exam Details</h6>
+                                        <p class="mb-1"><strong>Type:</strong> <span th:text="${exam.type.displayName}">MCQ</span></p>
+                                        <p class="mb-1"><strong>Total Questions:</strong> <span th:text="${exam.questions.size()}">10</span></p>
+                                        <p class="mb-0"><strong>Total Marks:</strong> <span th:text="${totalMarks}">100</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6><i class="bi bi-graph-up"></i> Performance</h6>
+                                        
+                                        <!-- Manual Grading Pending -->
+                                        <div th:if="${score == 0 && (exam.type.name() == 'CODING' || exam.type.name() == 'ESSAY')}">
+                                            <p class="mb-1"><strong>Status:</strong> 
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-hourglass-split"></i> Pending Manual Grading
+                                                </span>
+                                            </p>
+                                            <p class="mb-1"><strong>Grade:</strong> <span class="text-muted">Not graded yet</span></p>
+                                            <p class="mb-0"><strong>Pass Mark:</strong> 50%</p>
+                                        </div>
+                                        
+                                        <!-- Auto-graded Results -->
+                                        <div th:if="${!(score == 0 && (exam.type.name() == 'CODING' || exam.type.name() == 'ESSAY'))}">
+                                            <p class="mb-1"><strong>Status:</strong> 
+                                                <span th:if="${percentage >= 50}" class="badge bg-success">PASSED</span>
+                                                <span th:if="${percentage < 50}" class="badge bg-danger">FAILED</span>
+                                            </p>
+                                            <p class="mb-1"><strong>Grade:</strong>
+                                                <span th:if="${percentage >= 90}" class="badge bg-success">A+</span>
+                                                <span th:if="${percentage >= 80 && percentage < 90}" class="badge bg-success">A</span>
+                                                <span th:if="${percentage >= 70 && percentage < 80}" class="badge bg-info">B</span>
+                                                <span th:if="${percentage >= 60 && percentage < 70}" class="badge bg-warning">C</span>
+                                                <span th:if="${percentage >= 50 && percentage < 60}" class="badge bg-warning">D</span>
+                                                <span th:if="${percentage < 50}" class="badge bg-danger">F</span>
+                                            </p>
+                                            <p class="mb-0"><strong>Pass Mark:</strong> 50%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a th:href="@{/student/dashboard}" class="btn btn-primary btn-lg px-5 me-2">
+                                <i class="bi bi-house-fill"></i> Back to Dashboard
+                            </a>
+                            <a th:if="${exam.type.name() == 'MCQ'}" 
+                               th:href="@{/student/review/{id}(id=${submissionId})}" 
+                               class="btn btn-info btn-lg px-5">
+                                <i class="bi bi-eye-fill"></i> Review Answers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Confetti animation for pass
+        const percentage = /*[[${percentage}]]*/ 0;
+        if (percentage >= 50) {
+            console.log('🎉 Congratulations on passing!');
+        }
+    </script>
+</body>
+</html>

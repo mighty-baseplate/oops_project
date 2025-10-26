@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-graph-up"></i> Analytics Dashboard
+            </span>
+            <a href="/admin/dashboard" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid p-4">
+        <h2 class="mb-4">
+            <i class="bi bi-bar-chart-line"></i> Exam Analytics
+            <small class="text-muted">(Demonstrates Streams API)</small>
+        </h2>
+
+        <!-- Select Exam -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <label class="form-label"><strong>Select Exam:</strong></label>
+                <select class="form-select" id="examSelect" onchange="loadAnalytics()">
+                    <option value="">-- Choose an exam --</option>
+                    <option th:each="exam : ${exams}" 
+                            th:value="${exam.id}"
+                            th:text="${exam.title} + ' (' + ${exam.type.displayName} + ')'">
+                        Exam Title
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Analytics Cards -->
+        <div id="analyticsContainer" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-people text-primary" style="font-size: 36px;"></i>
+                            <h3 class="mt-2" id="totalStudents">0</h3>
+                            <p class="text-muted mb-0">Total Students</p>
+                            <small class="text-muted">Streams: count()</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-check-circle text-success" style="font-size: 36px;"></i>
+                            <h3 class="mt-2" id="passedStudents">0</h3>
+                            <p class="text-muted mb-0">Passed Students</p>
+                            <small class="text-muted">Streams: filter()</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-graph-up-arrow text-info" style="font-size: 36px;"></i>
+                            <h3 class="mt-2" id="averageScore">0</h3>
+                            <p class="text-muted mb-0">Average Score</p>
+                            <small class="text-muted">Streams: average()</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="bi bi-percent text-warning" style="font-size: 36px;"></i>
+                            <h3 class="mt-2" id="passPercentage">0%</h3>
+                            <p class="text-muted mb-0">Pass Rate</p>
+                            <small class="text-muted">Calculated</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Pass/Fail Distribution</h5>
+                            <small class="text-muted">Chart.js Pie Chart</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="passFailChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Performance Statistics</h5>
+                            <small class="text-muted">Chart.js Bar Chart</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="statsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-code-square"></i> Streams API Demo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>This analytics page demonstrates Java Streams API features:</p>
+                    <ul>
+                        <li><code>filter()</code> - Filtering passed students (score >= 50)</li>
+                        <li><code>mapToInt()</code> and <code>average()</code> - Calculating average scores</li>
+                        <li><code>count()</code> - Counting total students</li>
+                        <li><code>groupingBy()</code> - Grouping students by exam type (see console)</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Note:</strong> For actual data, students need to submit exams first.
+                        Currently showing demo visualization with sample data.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let passFailChart = null;
+        let statsChart = null;
+
+        async function loadAnalytics() {
+            const examId = document.getElementById('examSelect').value;
+            if (!examId) {
+                document.getElementById('analyticsContainer').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('analyticsContainer').style.display = 'block';
+
+            try {
+                const response = await fetch(`/admin/api/analytics/${examId}`);
+                const data = await response.json();
+
+                // Update stats cards
+                document.getElementById('totalStudents').textContent = data.totalStudents || 0;
+                document.getElementById('passedStudents').textContent = data.passedStudents || 0;
+                document.getElementById('averageScore').textContent = 
+                    (data.averageScore || 0).toFixed(2);
+                document.getElementById('passPercentage').textContent = 
+                    (data.passPercentage || 0).toFixed(1) + '%';
+
+                // Update charts
+                updateCharts(data);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                // Use demo data
+                const demoData = {
+                    totalStudents: 5,
+                    passedStudents: 3,
+                    failedStudents: 2,
+                    averageScore: 67.5,
+                    passPercentage: 60
+                };
+                document.getElementById('totalStudents').textContent = demoData.totalStudents;
+                document.getElementById('passedStudents').textContent = demoData.passedStudents;
+                document.getElementById('averageScore').textContent = demoData.averageScore.toFixed(2);
+                document.getElementById('passPercentage').textContent = demoData.passPercentage + '%';
+                updateCharts(demoData);
+            }
+        }
+
+        function updateCharts(data) {
+            const passedCount = data.passedStudents || 0;
+            const failedCount = data.failedStudents || 0;
+
+            // Pass/Fail Pie Chart
+            if (passFailChart) passFailChart.destroy();
+            const ctx1 = document.getElementById('passFailChart').getContext('2d');
+            passFailChart = new Chart(ctx1, {
+                type: 'pie',
+                data: {
+                    labels: ['Passed', 'Failed'],
+                    datasets: [{
+                        data: [passedCount, failedCount],
+                        backgroundColor: ['#28a745', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Stats Bar Chart
+            if (statsChart) statsChart.destroy();
+            const ctx2 = document.getElementById('statsChart').getContext('2d');
+            statsChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Total', 'Passed', 'Failed', 'Avg Score'],
+                    datasets: [{
+                        label: 'Statistics',
+                        data: [data.totalStudents || 0, passedCount, failedCount, 
+                               (data.averageScore || 0)],
+                        backgroundColor: ['#667eea', '#28a745', '#dc3545', '#ffc107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

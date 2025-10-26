@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Grading - Online Exam System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .sidebar {
+            background: #f8f9fa;
+            min-height: calc(100vh - 56px);
+            padding: 20px;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .submission-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .answer-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #11998e;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-clipboard-check"></i> Manual Grading
+            </span>
+            <div class="d-flex">
+                <a href="/admin/dashboard" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button class="btn btn-outline-light btn-sm" type="submit">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <h6 class="text-muted mb-3">MENU</h6>
+                <a href="/admin/dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a href="/admin/analytics">
+                    <i class="bi bi-graph-up"></i> Analytics
+                </a>
+                <a href="/admin/exam/create">
+                    <i class="bi bi-plus-circle"></i> Create Exam
+                </a>
+                <a href="/h2-console" target="_blank">
+                    <i class="bi bi-database"></i> Database Console
+                </a>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>
+                            <i class="bi bi-pencil-square"></i> 
+                            <span th:text="${exam.title}">Exam Title</span>
+                        </h2>
+                        <p class="text-muted mb-0">
+                            <span class="badge bg-info" th:text="${exam.type.displayName}">Type</span>
+                            <span class="ms-2">Total Submissions: <strong th:text="${submissions.size()}">0</strong></span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- No submissions -->
+                <div th:if="${submissions.isEmpty()}" class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No submissions yet for this exam.
+                </div>
+
+                <!-- Student Submissions -->
+                <div th:if="${!submissions.isEmpty()}">
+                    <div th:each="submission : ${submissions}" class="submission-card">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-person-circle"></i> 
+                                            <span th:text="${submission.student.name}">Student Name</span>
+                                        </h5>
+                                        <small class="text-muted" th:text="'Username: ' + ${submission.student.username}">Username</small>
+                                    </div>
+                                    <div>
+                                        <span th:if="${!submission.graded}" 
+                                              class="badge bg-warning text-dark">
+                                            <i class="bi bi-hourglass-split"></i> Not Graded
+                                        </span>
+                                        <span th:if="${submission.graded}" 
+                                              class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Graded: 
+                                            <span th:text="${submission.score}">0</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6><i class="bi bi-file-text"></i> Student Answers:</h6>
+                                
+                                <!-- Display Questions and Answers -->
+                                <div th:each="question, qStat : ${exam.questions}" class="answer-box">
+                                    <p class="mb-2">
+                                        <strong>Q<span th:text="${qStat.index + 1}">1</span>:</strong> 
+                                        <span th:text="${question.text}">Question text</span>
+                                    </p>
+                                    <div class="alert alert-info mb-0">
+                                        <i class="bi bi-chat-left-text"></i> 
+                                        <strong>Student's Answer:</strong><br>
+                                        <span th:if="${submission.answers.length > qStat.index}"
+                                              th:text="${submission.answers[qStat.index]}"
+                                              class="text-dark"
+                                              style="white-space: pre-wrap;">
+                                            No answer provided
+                                        </span>
+                                        <span th:if="${submission.answers.length <= qStat.index}"
+                                              class="text-muted fst-italic">
+                                            No answer provided
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Grading Form -->
+                                <div class="mt-4 p-3 bg-light rounded">
+                                    <h6><i class="bi bi-award"></i> Assign Score:</h6>
+                                    <form th:action="@{/admin/exam/{examId}/grade(examId=${exam.id})}" method="post">
+                                        <input type="hidden" name="studentId" th:value="${submission.student.id}">
+                                        
+                                        <div class="row align-items-end">
+                                            <div class="col-md-6">
+                                                <label class="form-label">
+                                                    Score (out of <span th:text="${exam.totalMarks}">100</span>):
+                                                </label>
+                                                <input type="number" 
+                                                       name="score" 
+                                                       class="form-control" 
+                                                       th:value="${submission.score}"
+                                                       min="0" 
+                                                       th:max="${exam.totalMarks}"
+                                                       required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="bi bi-save"></i> 
+                                                    <span th:if="${!submission.graded}">
+                                                        Grade Submission
+                                                    </span>
+                                                    <span th:if="${submission.graded}">
+                                                        Update Score
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

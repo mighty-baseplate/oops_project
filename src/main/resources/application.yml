@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: Secure Online Exam System
+  
+  # H2 Database Configuration (In-Memory for Demo)
+  datasource:
+    url: jdbc:h2:mem:examdb
+    driver-class-name: org.h2.Driver
+    username: admin
+    password: admin
+  
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # H2 Console Configuration (For Development)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  
+  # Thymeleaf Configuration
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+  
+  # Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin123
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: on_param
+
+# JWT Configuration
+jwt:
+  secret: MySecretKeyForOOPExamSystemDemoHackathon2024SecureOnlineExamination
+  expiration: 86400000
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Logging Configuration
+logging:
+  level:
+    com.examsystem: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

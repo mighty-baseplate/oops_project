@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Questions - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-question-circle"></i> Add Questions to 
+                <span th:text="${exam.title}">Exam</span>
+            </span>
+            <a href="/admin/dashboard" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-check"></i> Done
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-plus"></i> Add New Question</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/exam/{id}/question(id=${exam.id})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Section Number</label>
+                                <input type="number" class="form-control" name="section" 
+                                       value="1" min="1" th:max="${exam.sections}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Question Text</label>
+                                <textarea class="form-control" name="text" rows="3" 
+                                          placeholder="Enter the question..." required></textarea>
+                            </div>
+
+                            <div id="optionsContainer" th:if="${exam.type.name() == 'MCQ'}">
+                                <label class="form-label">Options (for MCQ)</label>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" name="options" 
+                                           placeholder="Option A" required>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" name="options" 
+                                           placeholder="Option B" required>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" name="options" 
+                                           placeholder="Option C" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" name="options" 
+                                           placeholder="Option D" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Correct Answer</label>
+                                <input type="text" class="form-control" name="correctAnswer" 
+                                       placeholder="Enter correct answer (e.g., 'Option A' or full text)" 
+                                       required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle"></i> Add Question
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">Exam Info</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Title:</strong> <span th:text="${exam.title}">Title</span></p>
+                        <p class="mb-2"><strong>Type:</strong> 
+                            <span class="badge bg-info" th:text="${exam.type.displayName}">MCQ</span>
+                        </p>
+                        <p class="mb-2"><strong>Sections:</strong> <span th:text="${exam.sections}">1</span></p>
+                        <p class="mb-2"><strong>Current Questions:</strong> 
+                            <span th:text="${exam.questions.size()}">0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">Existing Questions</h6>
+                    </div>
+                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                        <div th:if="${exam.questions.isEmpty()}" class="text-muted">
+                            No questions added yet.
+                        </div>
+                        <div th:if="${!exam.questions.isEmpty()}">
+                            <div th:each="q, stat : ${exam.questions}" class="mb-2 p-2 bg-light rounded">
+                                <small>
+                                    <strong>Q<span th:text="${stat.index + 1}">1</span>:</strong>
+                                    <span th:text="${q.text}">Question</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

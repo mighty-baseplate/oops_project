@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Exam - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .navbar { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-plus-circle"></i> Create New Exam
+            </span>
+            <a href="/admin/dashboard" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-plus"></i> Exam Details
+                            <small class="text-muted">(Factory Pattern Demo)</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <form th:action="@{/admin/exam/create}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-type"></i> Exam Title
+                                </label>
+                                <input type="text" class="form-control" name="title" 
+                                       placeholder="e.g., Java OOP Mid-Term Exam" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="bi bi-tag"></i> Exam Type (Factory Pattern)
+                                </label>
+                                <select class="form-select" name="type" id="examType" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option th:each="type : ${examTypes}" 
+                                            th:value="${type.name()}"
+                                            th:text="${type.displayName} + ' (' + (${type.autoGradable} ? 'Auto-Graded' : 'Manual') + ')'">
+                                        Type
+                                    </option>
+                                </select>
+                                <small class="text-muted">
+                                    Factory will create appropriate exam subclass (MCQExam/CodingExam/EssayExam)
+                                </small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-layout-split"></i> Number of Sections
+                                    </label>
+                                    <input type="number" class="form-control" name="sections" 
+                                           value="1" min="1" max="10" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-list-ol"></i> Questions per Section
+                                    </label>
+                                    <input type="number" class="form-control" name="questionsPerSection" 
+                                           value="10" min="1" max="50" required>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> 
+                                <strong>Factory Pattern:</strong> Based on your selection, the system will:
+                                <ul class="mb-0 mt-2">
+                                    <li><strong>MCQ:</strong> Create MCQExam with auto-grading strategy</li>
+                                    <li><strong>CODING:</strong> Create CodingExam with manual grading</li>
+                                    <li><strong>ESSAY:</strong> Create EssayExam with manual grading</li>
+                                </ul>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-check-circle"></i> Create Exam & Add Questions
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
